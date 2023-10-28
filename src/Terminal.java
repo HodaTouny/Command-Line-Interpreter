@@ -1,7 +1,4 @@
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -68,6 +65,26 @@ public class Terminal {
         }
     }
 
+    public void cp(String[] args){
+        String firstFile = args[0],secondFile = args[1];
+        try{
+            BufferedReader fileReader = new BufferedReader(new FileReader(firstFile));
+            BufferedWriter fileWriter = new BufferedWriter(new FileWriter(secondFile));
+            String line = fileReader.readLine();
+            while(line != null){
+                fileWriter.write(line);
+                fileWriter.newLine();
+                line = fileReader.readLine();
+            }
+            System.out.println("Files Copied Successfully");
+            fileWriter.close();
+            fileReader.close();
+
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
     public void wc(String[] args){
         String fileName = args[0];
         int numOfWord=0,numOfLines=0,numOfChars=0;
@@ -111,7 +128,10 @@ public class Terminal {
         } else if (commandName.equals("wc")) {
             wc(commandArgs);
 
-        } else if (commandName.equals("exit")) {
+        } else if (commandName.equals("cp")){
+            cp(commandArgs);
+
+        }else if (commandName.equals("exit")) {
             System.exit(0);
         } else {
             System.out.println("Command not recognized");
