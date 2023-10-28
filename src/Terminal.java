@@ -24,7 +24,7 @@ public class Terminal {
         System.out.println();
     }
 
-    public void getFiles() {
+    public void ls() {
         File directory = currentDirectory.toFile();
         File[] directoryContents = directory.listFiles();
         Arrays.sort(directoryContents);
@@ -61,6 +61,23 @@ public class Terminal {
                 }
             } else {
                 System.out.println("Directory '" + dirName + "' already exists.");
+            }
+        }
+    }
+
+
+    public void rmdir(String[] args) {
+        for (String dirName : args) {
+            Path dirPath = currentDirectory.resolve(dirName);
+            File dir = dirPath.toFile();
+            if (dir.exists() && dir.isDirectory()) {
+                if (dir.delete()) {
+                    System.out.println("Directory '" + dirName + "' deleted successfully.");
+                } else {
+                    System.out.println("Failed to delete directory '" + dirName + "'.");
+                }
+            } else {
+                System.out.println("Directory '" + dirName + "' does not exist.");
             }
         }
     }
@@ -107,37 +124,63 @@ public class Terminal {
 
 
 
-
-
-
-
     public void chooseCommandAction(String commandName, String[] commandArgs) {
-        if (commandName.equals("echo")) {
-            echo(commandArgs);
-         } else if (commandName.equals("pwd")) {
-        System.out.println(pwd());
-       }
-        else if (commandName.equals("ls")) {
-            getFiles();
-        }
-        else if (commandName.equals("ls -r")) {
-            Lsr();
-        }
-        else if (commandName.equals("mkdir")) {
-           mKdir(commandArgs);
-        } else if (commandName.equals("wc")) {
-            wc(commandArgs);
-
-        } else if (commandName.equals("cp")){
-            cp(commandArgs);
-
-        }else if (commandName.equals("exit")) {
-            System.exit(0);
-        } else {
-            System.out.println("Command not recognized");
+        switch (commandName) {
+            case "echo":
+                echo(commandArgs);
+                break;
+            case "pwd":
+                System.out.println(pwd());
+                break;
+            case "cd":
+                //cd(commandArgs);
+                break;
+            case "ls":
+                ls();
+                break;
+            case "ls -r":
+                Lsr();
+                break;
+            case "mkdir":
+                mKdir(commandArgs);
+                break;
+            case "rmdir":
+                rmdir(commandArgs);
+                break;
+            case "touch":
+               // touch(commandArgs);
+                break;
+            case "cp":
+                cp(commandArgs);
+                break;
+            case "cp -r":
+                //cpRecursive(commandArgs);
+                break;
+            case "rm":
+               // rm(commandArgs);
+                break;
+            case "cat":
+               // cat(commandArgs);
+                break;
+            case "wc":
+                wc(commandArgs);
+                break;
+            case "exit":
+                System.exit(0);
+                break;
+            case ">":
+                //redirectOutput(commandArgs);
+                break;
+            case ">>":
+                //appendOutput(commandArgs);
+                break;
+            case "history":
+                //displayHistory();
+                break;
+            default:
+                System.out.println("Command not recognized");
         }
     }
-
 
     public static void main(String[] args) {
         Terminal terminal = new Terminal();
