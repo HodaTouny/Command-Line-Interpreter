@@ -1,13 +1,16 @@
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
-
+import java.io.IOException;
 public class Terminal {
-    private Path currentDirectory;
+    private final Path currentDirectory;
 
     public Terminal() {
         currentDirectory = Paths.get(System.getProperty("user.dir"));
@@ -64,6 +67,33 @@ public class Terminal {
             }
         }
     }
+
+    public void wc(String[] args){
+        String fileName = args[0];
+        int numOfWord=0,numOfLines=0,numOfChars=0;
+        try {
+            BufferedReader fileReader = new BufferedReader(new FileReader(fileName));
+            String line = fileReader.readLine();
+            while(line != null){
+                numOfLines++;
+                String[] words = line.split("\\s");
+                numOfWord += words.length;
+                numOfChars += line.replace(" ","").length();
+                line = fileReader.readLine();
+            }
+            fileReader.close();
+            System.out.println(numOfLines + " " + numOfWord + " " + numOfChars + " " + fileName);
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+
+
+
+
+
+
     public void chooseCommandAction(String commandName, String[] commandArgs) {
         if (commandName.equals("echo")) {
             echo(commandArgs);
@@ -78,12 +108,16 @@ public class Terminal {
         }
         else if (commandName.equals("mkdir")) {
            mKdir(commandArgs);
-        }else if (commandName.equals("exit")) {
+        } else if (commandName.equals("wc")) {
+            wc(commandArgs);
+
+        } else if (commandName.equals("exit")) {
             System.exit(0);
         } else {
             System.out.println("Command not recognized");
         }
     }
+
 
     public static void main(String[] args) {
         Terminal terminal = new Terminal();
