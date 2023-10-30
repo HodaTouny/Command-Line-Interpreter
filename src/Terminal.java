@@ -1,13 +1,17 @@
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 import java.io.IOException;
 
 
 public class Terminal {
     private final Path currentDirectory;
+
+    private List<String> commandHistory = new ArrayList<>();
 
     public Terminal() {
         currentDirectory = Paths.get(System.getProperty("user.dir"));
@@ -117,10 +121,24 @@ public class Terminal {
             e.printStackTrace();
         }
     }
+    public void history() {
+        int cnt = 1;
+        for (String command : commandHistory) {
+            System.out.println(cnt + " " + command);
+            cnt++;
+        }
+
+    }
+
 
 
 
     public void chooseCommandAction(String commandName, String[] commandArgs) {
+            String fullCommand = commandName;
+            if (commandArgs.length > 0) {
+                fullCommand += " " + String.join(" ", commandArgs);
+            }
+            commandHistory.add(fullCommand);
         switch (commandName) {
             case "echo":
                 echo(commandArgs);
@@ -164,14 +182,14 @@ public class Terminal {
             case "exit":
                 System.exit(0);
                 break;
-            case ">":
-                //redirectOutput(commandArgs);
-                break;
-            case ">>":
-                //appendOutput(commandArgs);
-                break;
+//            case ">":
+
+//            break;
+//            case ">>":
+
+//                break;
             case "history":
-                //displayHistory();
+               history();
                 break;
             default:
                 System.out.println("Command not recognized");
