@@ -1,4 +1,5 @@
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -6,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.io.IOException;
+import java.nio.file.StandardCopyOption;
 
 
 public class Terminal {
@@ -102,6 +104,40 @@ public class Terminal {
         }
     }
 
+    public void cpRecursive(String[] args) {
+        String sourceDir = args[0];
+        String destinationDir = args[1];
+
+        File srcDir = new File(sourceDir);
+        File destDir = new File(destinationDir);
+
+        if (!srcDir.exists() || !srcDir.isDirectory()) {
+            System.out.println("Source directory does not exist or is not a directory.");
+            return;
+        }
+
+        try {
+            if (!destDir.exists()) {
+                destDir.mkdirs();
+            }
+
+            File[] files = srcDir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        String[] temp= {file.getAbsolutePath(), destDir + File.separator + file.getName()};
+                        cpRecursive(temp);
+                    } else {
+                        Files.copy(file.toPath(), new File(destDir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     public void wc(String[] args){
         String fileName = args[0];
         int numOfWord=0,numOfLines=0,numOfChars=0;
@@ -168,7 +204,7 @@ public class Terminal {
                 cp(commandArgs);
                 break;
             case "cp -r":
-                //cpRecursive(commandArgs);
+                cpRecursive(commandArgs);
                 break;
             case "rm":
                // rm(commandArgs);
