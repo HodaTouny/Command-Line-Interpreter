@@ -165,7 +165,54 @@ public class Terminal {
         }
 
     }
+    public void touch(String[] args) {
+        String fileName = args[0];
+        try {
+            File file = new File(fileName);
+            if (file.createNewFile()) {
+                System.out.println("File created: " + file.getName());
+            } else {
+                System.out.println("File already exists.");
+            }
+        } catch (Exception e) {
+            System.out.println("An error occurred.");
+        }
+    }
 
+    public void cat(String... args) {
+        for (String fileName : args) {
+            File file = new File(fileName);
+            if (file.exists()) {
+                try {
+                    BufferedReader fileReader = new BufferedReader(new FileReader(fileName));
+                    String line = fileReader.readLine();
+                    while (line != null) {
+                        System.out.println(line);
+                        line = fileReader.readLine();
+                    }
+                    fileReader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                System.out.println("File '" + fileName + "' does not exist.");
+            }
+        }
+    }
+
+    public void rm(String[] args) {
+        String fileName = args[0];
+        try {
+            File file = new File(fileName);
+            if (file.delete()) {
+                System.out.println("File deleted: " + file.getName());
+            } else {
+                System.out.println("File does not exist.");
+            }
+        } catch (Exception e) {
+            System.out.println("An error occurred.");
+        }
+    }
 
 
 
@@ -198,7 +245,7 @@ public class Terminal {
                 rmdir(commandArgs);
                 break;
             case "touch":
-               // touch(commandArgs);
+                touch(commandArgs);
                 break;
             case "cp":
                 cp(commandArgs);
@@ -207,10 +254,10 @@ public class Terminal {
                 cpRecursive(commandArgs);
                 break;
             case "rm":
-               // rm(commandArgs);
+                rm(commandArgs);
                 break;
             case "cat":
-               // cat(commandArgs);
+                cat(commandArgs);
                 break;
             case "wc":
                 wc(commandArgs);
@@ -247,3 +294,7 @@ public class Terminal {
         }
     }
 }
+
+
+
+
