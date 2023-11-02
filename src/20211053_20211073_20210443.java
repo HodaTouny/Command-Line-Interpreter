@@ -347,7 +347,7 @@ import java.nio.file.StandardCopyOption;
         Terminal terminal = new Terminal();
         Scanner scanner = new Scanner(System.in);
         while (true) {
-            System.out.print(terminal.pwd() + ">");
+            System.out.print( ">");
             String input = scanner.nextLine();
             Parser parser = new Parser();
             if (parser.parse(input)) {
