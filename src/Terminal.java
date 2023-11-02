@@ -19,8 +19,7 @@ public class Terminal {
         currentDirectory = Paths.get(System.getProperty("user.dir"));
     }
 
-    public String pwd() {
-        return currentDirectory.toString();
+    public String pwd() {return currentDirectory.toString();
     }
 
     public void echo(String args[]) {
@@ -52,39 +51,57 @@ public class Terminal {
         }
     }
     public void mKdir(String[] args) {
+        if(args.length == 0){
+            System.err.println("mkdir : missing operand.");
+            return;
+        }
         for (String dirName : args) {
             Path newDir = currentDirectory.resolve(dirName);
             File newDirFile = newDir.toFile();
             if (!newDirFile.exists()) {
-                if (newDirFile.mkdir()) {
-                    System.out.println("Directory '" + dirName + "' created successfully.");
-                } else {
-                    System.out.println("Failed to create directory '" + dirName + "'.");
+                if (!newDirFile.mkdir()) {
+                    System.out.println("mkdir: Filed to create directory '" + dirName + "'.");
                 }
             } else {
-                System.out.println("Directory '" + dirName + "' already exists.");
+                System.out.println("mkdir: cannot create directory '" + dirName + "': File exists");
             }
         }
     }
 
 
     public void rmdir(String[] args) {
+        if(args.length == 0){
+            System.err.println("mkdir : missing operand.");
+            return;
+        }
         for (String dirName : args) {
             Path dirPath = currentDirectory.resolve(dirName);
             File dir = dirPath.toFile();
             if (dir.exists() && dir.isDirectory()) {
-                if (dir.delete()) {
-                    System.out.println("Directory '" + dirName + "' deleted successfully.");
-                } else {
-                    System.out.println("Failed to delete directory '" + dirName + "'.");
+                if (!dir.delete()) {
+                    System.out.println("rmdir: Filed to delete directory '" + dirName + "'.");
                 }
-            } else {
-                System.out.println("Directory '" + dirName + "' does not exist.");
+            }else {
+                System.out.println("rmdir: failed to remove '" + dirName + "': No such file or directory");
             }
         }
     }
 
     public void cp(String[] args){
+        File file = new File(args[0]);
+        File file2 = new File(args[1]);
+        if(args.length > 2){
+            System.err.println("cp: take more only 2 arguments");
+            return;
+        }else if(!file.exists() || !file.isFile()){
+            System.err.println("cp: The second argument is not a file or doesn't exist");
+            return;
+        }else if(!file2.exists() || !file2.isFile()){
+            System.err.println("cp: The second argument is not a file or doesn't exist");
+            return;
+        }
+
+
         String firstFile = args[0],secondFile = args[1];
         try{
             BufferedReader fileReader = new BufferedReader(new FileReader(firstFile));
@@ -95,24 +112,23 @@ public class Terminal {
                 fileWriter.newLine();
                 line = fileReader.readLine();
             }
-            System.out.println("Files Copied Successfully");
             fileWriter.close();
             fileReader.close();
 
         }catch(IOException e){
-            e.printStackTrace();
+            System.err.println("cp: error while reading or writing in the file");
         }
     }
 
     public void cpRecursive(String[] args) {
-        String sourceDir = args[0];
-        String destinationDir = args[1];
+        File srcDir = new File(args[0]);
+        File destDir = new File(args[1]);
 
-        File srcDir = new File(sourceDir);
-        File destDir = new File(destinationDir);
-
-        if (!srcDir.exists() || !srcDir.isDirectory()) {
-            System.out.println("Source directory does not exist or is not a directory.");
+        if(args.length > 2){
+            System.err.println("cp -r: take more only 2 arguments");
+            return;
+        }else if(!srcDir.exists() || !srcDir.isDirectory()){
+            System.err.println("cp -r: The Source argument is not a Directory or doesn't exist");
             return;
         }
 
@@ -120,7 +136,6 @@ public class Terminal {
             if (!destDir.exists()) {
                 destDir.mkdirs();
             }
-
             File[] files = srcDir.listFiles();
             if (files != null) {
                 for (File file : files) {
@@ -133,28 +148,35 @@ public class Terminal {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("cp -r: error while reading or writing in the directory");
         }
     }
 
 
     public void wc(String[] args){
-        String fileName = args[0];
-        int numOfWord=0,numOfLines=0,numOfChars=0;
-        try {
-            BufferedReader fileReader = new BufferedReader(new FileReader(fileName));
-            String line = fileReader.readLine();
-            while(line != null){
-                numOfLines++;
-                String[] words = line.split("\\s");
-                numOfWord += words.length;
-                numOfChars += line.replace(" ","").length();
-                line = fileReader.readLine();
+        for (String arg : args) {
+            File file = new File(arg);
+            if(!file.exists() || !file.isFile()){
+                System.err.println("wc: argument is not a file or doesn't exist");
+                return;
             }
-            fileReader.close();
-            System.out.println(numOfLines + " " + numOfWord + " " + numOfChars + " " + fileName);
-        }catch (IOException e){
-            e.printStackTrace();
+
+            int numOfWord = 0, numOfLines = 0, numOfChars = 0;
+            try {
+                BufferedReader fileReader = new BufferedReader(new FileReader(arg));
+                String line = fileReader.readLine();
+                while (line != null) {
+                    numOfLines++;
+                    String[] words = line.split("\\s");
+                    numOfWord += words.length;
+                    numOfChars += line.replace(" ", "").length();
+                    line = fileReader.readLine();
+                }
+                fileReader.close();
+                System.out.println(numOfLines + " " + numOfWord + " " + numOfChars + " " + arg);
+            } catch (IOException e) {
+                System.err.println("wc: error while reading from the file");
+            }
         }
     }
     public void history() {
@@ -166,19 +188,17 @@ public class Terminal {
 
     }
     public void touch(String[] args) {
-        String fileName = args[0];
-        try {
-            File file = new File(fileName);
-            if (file.createNewFile()) {
-                System.out.println("File created: " + file.getName());
-            } else {
-                System.out.println("File already exists.");
+        for (String arg : args) {
+            try {
+                File file = new File(arg);
+                if (!file.createNewFile()) {
+                    System.out.println("touch: File already exists at the specified path.");
+                }
+            } catch (Exception e) {
+                System.err.println("touch: An error occurred.");
             }
-        } catch (Exception e) {
-            System.out.println("An error occurred.");
         }
     }
-
     public void cat(String... args) {
         for (String fileName : args) {
             File file = new File(fileName);
@@ -195,7 +215,7 @@ public class Terminal {
                     e.printStackTrace();
                 }
             } else {
-                System.out.println("File '" + fileName + "' does not exist.");
+                System.err.println("cat: file'" + fileName + "' doesn't exist.");
             }
         }
     }
@@ -204,13 +224,11 @@ public class Terminal {
         String fileName = args[0];
         try {
             File file = new File(fileName);
-            if (file.delete()) {
-                System.out.println("File deleted: " + file.getName());
-            } else {
-                System.out.println("File does not exist.");
+            if (!file.delete()) {
+                System.out.println("rm: file '" + fileName + "' doesn't exist");
             }
         } catch (Exception e) {
-            System.out.println("An error occurred.");
+            System.err.println("rm: An error occurred while removing.");
         }
     }
 
@@ -228,9 +246,6 @@ public class Terminal {
                 break;
             case "pwd":
                 System.out.println(pwd());
-                break;
-            case "cd":
-                //cd(commandArgs);
                 break;
             case "ls":
                 ls();
@@ -265,12 +280,6 @@ public class Terminal {
             case "exit":
                 System.exit(0);
                 break;
-//            case ">":
-
-//            break;
-//            case ">>":
-
-//                break;
             case "history":
                history();
                 break;
