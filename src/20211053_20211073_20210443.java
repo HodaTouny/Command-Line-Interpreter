@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.nio.file.StandardCopyOption;
 
 
-public class Terminal {
+ class Terminal {
     private final Path currentDirectory;
 
     private List<String> commandHistory = new ArrayList<>();
@@ -70,8 +70,24 @@ public class Terminal {
 
 
     public void rmdir(String[] args) {
+
         if(args.length == 0){
             System.err.println("mkdir : missing operand.");
+            return;
+        }
+        if(args[0].equals("*")){
+            File directory = currentDirectory.toFile();
+            File[] directoryContents = directory.listFiles();
+            Arrays.sort(directoryContents);
+            for (File content : directoryContents) {
+                if (content.isDirectory()) {
+                    if(content.list().length == 0){
+                        if (!content.delete()) {
+                            System.out.println("rmdir: Filed to delete directory '" + content.getName() + "'.");
+                        }
+                    }
+                }
+            }
             return;
         }
         for (String dirName : args) {
@@ -88,12 +104,13 @@ public class Terminal {
     }
 
     public void cp(String[] args){
+        if(args.length != 2){
+            System.err.println("cp: take 2 arguments");
+            return;
+        }
         File file = new File(args[0]);
         File file2 = new File(args[1]);
-        if(args.length > 2){
-            System.err.println("cp: take more only 2 arguments");
-            return;
-        }else if(!file.exists() || !file.isFile()){
+         if(!file.exists() || !file.isFile()){
             System.err.println("cp: The second argument is not a file or doesn't exist");
             return;
         }else if(!file2.exists() || !file2.isFile()){
@@ -120,40 +137,42 @@ public class Terminal {
         }
     }
 
-    public void cpRecursive(String[] args) {
-        File srcDir = new File(args[0]);
-        File destDir = new File(args[1]);
+     public void cpRecursive(String[] args) {
+         if (args.length != 2) {
+             System.err.println("cp -r: take 2 arguments");
+             return;
+         }
+         File srcDir = new File(args[0]);
+         File destDir = new File(args[1]);
 
-        if(args.length > 2){
-            System.err.println("cp -r: take more only 2 arguments");
-            return;
-        }else if(!srcDir.exists() || !srcDir.isDirectory()){
-            System.err.println("cp -r: The Source argument is not a Directory or doesn't exist");
-            return;
-        }
+         if (!srcDir.exists() || !srcDir.isDirectory()) {
+             System.err.println("cp -r: The Source argument is not a Directory or doesn't exist");
+             return;
+         }
 
-        try {
-            if (!destDir.exists()) {
-                destDir.mkdirs();
-            }
-            File[] files = srcDir.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    if (file.isDirectory()) {
-                        String[] temp= {file.getAbsolutePath(), destDir + File.separator + file.getName()};
-                        cpRecursive(temp);
-                    } else {
-                        Files.copy(file.toPath(), new File(destDir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            System.err.println("cp -r: error while reading or writing in the directory");
-        }
-    }
+         try {
+             if (!destDir.exists()) {
+                 destDir.mkdirs();
+             }
+             File[] files = srcDir.listFiles();
+             if (files != null) {
+                 for (File file : files) {
+                     if (file.isDirectory()) {
+                         File subDestDir = new File(destDir, file.getName());
+                         String[] temp = {file.getAbsolutePath(), subDestDir.getAbsolutePath()};
+                         cpRecursive(temp);
+                     } else {
+                         Files.copy(file.toPath(), new File(destDir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
+                     }
+                 }
+             }
+         } catch (IOException e) {
+             System.err.println("cp -r: error while reading or writing in the directory");
+         }
+     }
 
 
-    public void wc(String[] args){
+     public void wc(String[] args){
         for (String arg : args) {
             File file = new File(arg);
             if(!file.exists() || !file.isFile()){
@@ -249,6 +268,7 @@ public class Terminal {
                 break;
             case "ls":
                 ls();
+
                 break;
             case "ls -r":
                 Lsr();
@@ -307,3 +327,32 @@ public class Terminal {
 
 
 
+class Parser {
+    private String commandName;
+    private String[] args;
+    public boolean parse(String input) {
+        String[] tokens = input.trim().split("\\s+");
+        if (tokens.length > 0) {
+            commandName = tokens[0];
+            if (tokens.length > 1 && (tokens[1].startsWith("-")||tokens[1].startsWith(">"))) {
+                commandName += " " + tokens[1];
+                args = new String[tokens.length - 2];
+                System.arraycopy(tokens, 2, args, 0, tokens.length - 2);
+            } else {
+                args = new String[tokens.length - 1];
+                System.arraycopy(tokens, 1, args, 0, tokens.length - 1);
+            }
+            return true;
+        }
+        return false;
+    }
+
+
+    public String getCommandName() {
+        return commandName;
+    }
+
+    public String[] getArgs() {
+        return args;
+    }
+}
