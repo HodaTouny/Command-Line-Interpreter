@@ -55,6 +55,11 @@ import java.nio.file.StandardCopyOption;
             System.err.println("mkdir : missing operand.");
             return;
         }
+        if(isInvalidChar(args[0])){
+            System.err.println("mkdir: Invalid directory name.");
+            return;
+        }
+
         for (String dirName : args) {
             Path newDir = currentDirectory.resolve(dirName);
             File newDirFile = newDir.toFile();
@@ -111,11 +116,20 @@ import java.nio.file.StandardCopyOption;
         File file = new File(args[0]);
         File file2 = new File(args[1]);
          if(!file.exists() || !file.isFile()){
-            System.err.println("cp: The second argument is not a file or doesn't exist");
+            System.err.println("cp: The first argument is not a file or doesn't exist");
             return;
-        }else if(!file2.exists() || !file2.isFile()){
-            System.err.println("cp: The second argument is not a file or doesn't exist");
-            return;
+        }
+        if(!file2.exists()|| !file.isFile()){
+            try{
+                if(isInvalidChar(file2.getName())){
+                    System.err.println("cp: Invalid file name.");
+                    return;
+                }
+                file2.createNewFile();
+            }catch(IOException e){
+                System.err.println("cp: error while creating the file");
+            }
+
         }
 
 
@@ -152,6 +166,11 @@ import java.nio.file.StandardCopyOption;
 
          try {
              if (!destDir.exists()) {
+                 //check if the directory name is valid
+                    if (isInvalidChar(destDir.getName())) {
+                        System.err.println("cp -r: Invalid directory name.");
+                        return;
+                    }
                  destDir.mkdirs();
              }
              File[] files = srcDir.listFiles();
@@ -207,6 +226,14 @@ import java.nio.file.StandardCopyOption;
 
     }
     public void touch(String[] args) {
+        if (args.length == 0) {
+            System.err.println("touch: missing operand.");
+            return;
+        }
+        if (isInvalidChar(args[0])) {
+            System.err.println("touch: Invalid file name.");
+            return;
+        }
         for (String arg : args) {
             try {
                 File file = new File(arg);
@@ -250,8 +277,15 @@ import java.nio.file.StandardCopyOption;
             System.err.println("rm: An error occurred while removing.");
         }
     }
-
-
+    public boolean isInvalidChar(String fileName) {
+        String invalidChars = "\\/:*?\"<>|";
+        for (int i = 0; i < fileName.length(); ++i) {
+            if (invalidChars.indexOf(fileName.charAt(i)) != -1) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public void chooseCommandAction(String commandName, String[] commandArgs) {
             String fullCommand = commandName;
@@ -306,6 +340,7 @@ import java.nio.file.StandardCopyOption;
             default:
                 System.out.println("Command not recognized");
         }
+
     }
 
     public static void main(String[] args) {
@@ -324,9 +359,6 @@ import java.nio.file.StandardCopyOption;
     }
 }
 
-
-
-
 class Parser {
     private String commandName;
     private String[] args;
@@ -334,7 +366,7 @@ class Parser {
         String[] tokens = input.trim().split("\\s+");
         if (tokens.length > 0) {
             commandName = tokens[0];
-            if (tokens.length > 1 && (tokens[1].startsWith("-")||tokens[1].startsWith(">"))) {
+            if (tokens.length > 1 && tokens[1].startsWith("-")) {
                 commandName += " " + tokens[1];
                 args = new String[tokens.length - 2];
                 System.arraycopy(tokens, 2, args, 0, tokens.length - 2);
@@ -355,4 +387,5 @@ class Parser {
     public String[] getArgs() {
         return args;
     }
+
 }
