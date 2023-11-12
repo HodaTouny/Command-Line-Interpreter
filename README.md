@@ -6,7 +6,6 @@ This repository contains a Command Line Interpreter (CLI) project developed as p
 
 - `echo`
 - `pwd`
-- `cd`
 - `ls`
 - `mkdir`
 - `rmdir`
@@ -15,8 +14,6 @@ This repository contains a Command Line Interpreter (CLI) project developed as p
 - `rm`
 - `cat`
 - `wc`
-- `>`
-- `>>`
 - `history`
 
 Feel free to explore and use these commands to interact with the CLI. Enjoy your CLI experience!
